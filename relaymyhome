@@ -104,9 +104,14 @@ then
     Addr=($(for X in {0..159} ; do echo ${X} | awk '{printf "%s%02X ", "4E:53:50:4F:4F:", $1}'; done ;))
 
     if [[ $1 == "full" ]]
-    then
-      num=5
-      echo "Full Mode enabled. Randomly seeding five addresses from full list."
+    then 
+      if [ $# -eq 1 ]
+      then
+          num=5
+      else
+          num=$(($2))
+      fi
+      echo "Full Mode enabled. Randomly seeding $num addresses from full list."
     else
       num=2
       echo "Quick Mode enabled. Randomly seeding ${num} addresses from full list."
@@ -124,6 +129,80 @@ then
         sleep ${relay_time}
     done
 
+# Get MAC addresses here: https://docs.google.com/spreadsheet/ccc?key=0AvvH5W4E2lIwdEFCUkxrM085ZGp0UkZlenp6SkJablE
+elif [[ $1 == "custom" ]]
+then
+    baseAddr="4E:53:50:4F:4F:"
+    main="46"
+    pokemon="45"
+    zelda="43"
+    acnl="47"
+    fireemblem="48"
+    bravelydefault="4C"
+    
+    if [[ $2 == "main" ]]
+    then
+        addr+=($baseAddr$main)
+    elif [[ $2 == "pokemon" ]]
+    then
+        addr+=($baseAddr$pokemon)
+    elif [[ $2 == "zelda" ]]
+    then
+        addr+=($baseAddr$zelda)
+    elif [[ $2 == "acnl" ]]
+    then
+        addr+=($baseAddr$acnl)
+    elif [[ $2 == "fe" ]]
+    then
+        addr+=($baseAddr$fireemblem)
+    elif [[ $2 == "bd" ]]
+    then
+        addr+=($baseAddr$bravelydefault)
+    else
+        addr+=($baseAddr$main)
+        addr+=($baseAddr$pokemon)
+        addr+=($baseAddr$zelda)
+        addr+=($baseAddr$acnl)
+        addr+=($baseAddr$fireemblem)
+        addr+=($baseAddr$bravelydefault)
+    fi
+
+    echo "Custom Mode enabled. Connecting to game targetted addresses."
+    n=1
+    
+    for a in "${addr[@]}"
+    do
+        echo "Cycling WiFi..."
+        sudo ifconfig $wifi lladdr $a
+        networksetup -setairportpower $wifi off
+        networksetup -setairportpower $wifi on
+        echo "Spoofing $wifi to $a for 90 seconds ($n of ${#addr[@]})"
+        n=$((n+1))
+        sleep 90
+    done
+    
+
+elif [[ $1 == "la" ]]
+then
+    addr[0]="00:1F:CA:60:3E:20" #streetpassLA
+    addr[1]="58:8D:09:B1:8A:62" #santamonica here and below
+    addr[2]="00:12:7F:CA:A1:A3"
+    addr[3]="00:1F:9E:D3:84:60"
+    addr[4]="00:0D:BD:AF:DA:4A"
+
+    echo "Los Angeles Mode enabled. Connecting to five LA/Santa Monica addresses."
+    n=1
+    
+    for a in "${addr[@]}"
+    do
+        echo "Cycling WiFi..."
+        sudo ifconfig $wifi lladdr $a
+        networksetup -setairportpower $wifi off
+        networksetup -setairportpower $wifi on
+        echo "Spoofing $wifi to $a for 90 seconds ($n of 5)"
+        n=$((n+1))
+        sleep 90
+    done
 
 else
     # This set of MACs will be used in standard mode
