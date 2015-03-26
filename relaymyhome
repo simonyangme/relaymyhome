@@ -134,15 +134,19 @@ elif [[ $1 == "custom" ]]
 then
     baseAddr="4E:53:50:4F:4F:"
     main="46"
+    smash="40"
     pokemon="45"
     zelda="43"
-    acnl="47"
+    acnl="47" # Also fantasy life
     fireemblem="48"
     bravelydefault="4C"
     
     if [[ $2 == "main" ]]
     then
         addr+=($baseAddr$main)
+    elif [[ $2 == "smash" ]]
+    then
+        addr+=($baseAddr$smash)
     elif [[ $2 == "pokemon" ]]
     then
         addr+=($baseAddr$pokemon)
@@ -160,6 +164,7 @@ then
         addr+=($baseAddr$bravelydefault)
     else
         addr+=($baseAddr$main)
+        addr+=($baseAddr$smash)
         addr+=($baseAddr$pokemon)
         addr+=($baseAddr$zelda)
         addr+=($baseAddr$acnl)
@@ -167,7 +172,7 @@ then
         addr+=($baseAddr$bravelydefault)
     fi
 
-    echo "Custom Mode enabled. Connecting to game targetted addresses."
+    echo "Custom Mode enabled. Connecting to game targeted addresses."
     n=1
     
     for a in "${addr[@]}"
@@ -178,7 +183,7 @@ then
         networksetup -setairportpower $wifi on
         echo "Spoofing $wifi to $a for 90 seconds ($n of ${#addr[@]})"
         n=$((n+1))
-        sleep 90
+        sleep ${relay_time}
     done
     
 
@@ -201,7 +206,30 @@ then
         networksetup -setairportpower $wifi on
         echo "Spoofing $wifi to $a for 90 seconds ($n of 5)"
         n=$((n+1))
-        sleep 90
+        sleep ${relay_time}
+    done
+
+elif [[ $1 == "nyc" ]]
+then
+    addr[0]="00:25:9C:52:1C:6A" #nyc
+    addr[1]="00:0D:67:15:2D:82"
+    addr[2]="00:0D:67:15:D7:21"
+    addr[3]="00:0D:67:15:D5:44"
+    addr[4]="00:0D:67:15:D2:59"
+    addr[5]="00:0D:67:15:D6:FD"
+
+    echo "NYC Mode enabled. Connecting to six NYC addresses."
+    n=1
+    
+    for a in "${addr[@]}"
+    do
+        echo "Cycling WiFi..."
+        sudo ifconfig $wifi lladdr $a
+        networksetup -setairportpower $wifi off
+        networksetup -setairportpower $wifi on
+        echo "Spoofing $wifi to $a for 90 seconds ($n of 5)"
+        n=$((n+1))
+        sleep ${relay_time}
     done
 
 else
